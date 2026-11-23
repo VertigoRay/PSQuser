@@ -97,10 +97,12 @@ function Get-Quser {
         Write-Debug "[QuserObject Get-Quser] Process Bound Parameters: $($MyInvocation.BoundParameters | ConvertTo-Json)"
         Write-Debug "[QuserObject Get-Quser] Process Unbound Parameters: $($MyInvocation.UnboundParameters | ConvertTo-Json)"
 
-        if ($AdComputer) {
-            Write-Output ($AdComputer.$Property | Invoke-Quser -UserOrSession $UserOrSession | ConvertTo-QuserObject)
-        } else {
-            Write-Output ($Server | Invoke-Quser -UserOrSession $UserOrSession | ConvertTo-QuserObject)
-        }
+        $target = if ($AdComputer) { $AdComputer.$Property } else { $Server }
+
+        # Keep Invoke-Quser as the last command of its own pipeline, so that its warnings reach
+        # this function's -WarningVariable. Piping it straight into ConvertTo-QuserObject lost them.
+        $quserOutput = @($target | Invoke-Quser -UserOrSession $UserOrSession)
+
+        Write-Output ($quserOutput | ConvertTo-QuserObject)
     }
 }
