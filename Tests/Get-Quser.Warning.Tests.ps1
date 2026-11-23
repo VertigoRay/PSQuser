@@ -79,6 +79,13 @@ Describe 'Get-Quser warning stream' {
             @($wv).Count | Should Be 0
         }
 
+        It 'works through the Get-LoggedOnUsers alias' {
+            $null = Get-LoggedOnUsers -Server 'badhost' -WarningVariable wv 3>$null
+            @($wv).Count | Should Be 1
+        }
+    }
+
+    Context 'per-target conversion' {
         It 'converts each target before querying the next target' {
             $script:targetEvents = [Collections.Generic.List[string]]::new()
 
@@ -99,11 +106,6 @@ Describe 'Get-Quser warning stream' {
             $null = Get-Quser -Server 'first', 'second' -IdleStartTime
 
             ($script:targetEvents -join ',') | Should Be 'query:first,convert,query:second,convert'
-        }
-
-        It 'works through the Get-LoggedOnUsers alias' {
-            $null = Get-LoggedOnUsers -Server 'badhost' -WarningVariable wv 3>$null
-            @($wv).Count | Should Be 1
         }
     }
 

@@ -99,10 +99,10 @@ function Get-Quser {
 
         $target = if ($AdComputer) { $AdComputer.$Property } else { $Server }
 
-        foreach ($server in $target) {
+        foreach ($targetServer in @($target)) {
             # Keep Invoke-Quser as the last command of its own pipeline, so that its warnings reach
             # this function's -WarningVariable. Piping it straight into ConvertTo-QuserObject lost them.
-            $quserOutput = @($server | Invoke-Quser -UserOrSession $UserOrSession)
+            $quserOutput = @($targetServer | Invoke-Quser -UserOrSession $UserOrSession)
 
             Write-Output ($quserOutput | ConvertTo-QuserObject)
         }
