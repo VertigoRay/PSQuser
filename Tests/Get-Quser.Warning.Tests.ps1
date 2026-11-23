@@ -79,6 +79,28 @@ Describe 'Get-Quser warning stream' {
             @($wv).Count | Should Be 0
         }
 
+        It 'converts each target before querying the next target' {
+            $script:targetEvents = [Collections.Generic.List[string]]::new()
+
+            Mock Invoke-Expression {
+                $queriedServer = [regex]::Match($Command, '/SERVER:(?<server>\S+)').Groups['server'].Value
+                $script:targetEvents.Add("query:$queriedServer")
+                $global:LASTEXITCODE = 0
+                return @(
+                    ' USERNAME              SESSIONNAME        ID  STATE   IDLE TIME  LOGON TIME',
+                    ' alice                 console             1  Active      1:00   1/1/2026 8:00 AM'
+                )
+            }
+            Mock Get-QuserIdleTime {
+                $script:targetEvents.Add('convert')
+                return [timespan]::FromMinutes(1)
+            }
+
+            $null = Get-Quser -Server 'first', 'second' -IdleStartTime
+
+            ($script:targetEvents -join ',') | Should Be 'query:first,convert,query:second,convert'
+        }
+
         It 'works through the Get-LoggedOnUsers alias' {
             $null = Get-LoggedOnUsers -Server 'badhost' -WarningVariable wv 3>$null
             @($wv).Count | Should Be 1
