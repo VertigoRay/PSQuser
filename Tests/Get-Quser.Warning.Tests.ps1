@@ -68,10 +68,10 @@ Describe 'Get-Quser warning stream' {
         }
 
         It 'records one warning per failing host for a multi-server call' {
-            $result = Get-Quser -Server 'badhost', 'goodhost', 'bad2' -WarningAction 'SilentlyContinue' -WarningVariable wv
+            $result = @(Get-Quser -Server 'badhost', 'goodhost', 'bad2' -WarningAction 'SilentlyContinue' -WarningVariable wv)
             @($wv).Count | Should Be 2
-            @($result | Where-Object { $_ }).Count | Should Be 1
-            @($result | Where-Object { $_ })[0].Server | Should Be 'goodhost'
+            $result.Count | Should Be 1
+            $result[0].Server | Should Be 'goodhost'
         }
 
         It 'records no warning for a reachable host' {
@@ -111,11 +111,11 @@ Describe 'Get-Quser warning stream' {
 
     Context 'pipeline call' {
         It 'records one warning per failing host and keeps the good result' {
-            $result = 'badhost', 'goodhost', 'bad2' | Get-Quser -WarningAction 'SilentlyContinue' -WarningVariable wv
+            $result = @('badhost', 'goodhost', 'bad2' | Get-Quser -WarningAction 'SilentlyContinue' -WarningVariable wv)
             @($wv).Count | Should Be 2
             @($wv | ForEach-Object { $_.Message }) -contains ' bad2: ERROR 1722: The RPC server is unavailable' | Should Be $true
-            @($result | Where-Object { $_ }).Count | Should Be 1
-            @($result | Where-Object { $_ })[0].Server | Should Be 'goodhost'
+            $result.Count | Should Be 1
+            $result[0].Server | Should Be 'goodhost'
         }
 
         It 'records the warning for AdComputer-style objects using -Property' {
@@ -175,7 +175,7 @@ Describe 'Get-Quser warning stream' {
         }
 
         It 'returns no session object for a failing host' {
-            $result = @(Get-Quser -Server 'badhost' 3>$null | Where-Object { $_ })
+            $result = @(Get-Quser -Server 'badhost' 3>$null)
             $result.Count | Should Be 0
         }
 

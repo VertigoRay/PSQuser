@@ -104,7 +104,7 @@ function Get-Quser {
             # this function's -WarningVariable. Piping it straight into ConvertTo-QuserObject lost them.
             $quserOutput = @($targetServer | Invoke-Quser -UserOrSession $UserOrSession)
 
-            Write-Output ($quserOutput | ConvertTo-QuserObject)
+            $quserOutput | ConvertTo-QuserObject
         }
     }
 }
